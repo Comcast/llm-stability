@@ -7,6 +7,8 @@ v1.0 Submitted July 26, 2024 ArXiv released August 6, 2024: https://arxiv.org/ab
 
 v2.0 ...
 
+The latest version of the paper is `LLM_Stability_paper.pdf` in this repo. 
+
 ## Supporting software and data
 
 The repo contains source code used to query the LLMs, `main.py`, the parsing code to extract answers `post_process_answers.py` and the scoring software `calculate_statistics.py`. Note that this project was started without the intention of releasing source and data so there may be small discrepencies with versions of the paper particularly in the parsing out of answers. The variations are minor and should not impact the analysis in the paper. 
