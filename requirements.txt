@@ -5,7 +5,7 @@ annotated-types==0.7.0
 anyio==3.7.1
 attrs==23.2.0
 beautifulsoup4==4.12.3
-certifi==2024.6.2
+certifi==2024.7.4
 charset-normalizer==3.3.2
 click==8.1.7
 datasets==2.20.0
