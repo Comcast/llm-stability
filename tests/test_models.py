@@ -74,6 +74,20 @@ def test_llama_8b():
     assert run_info['top_p_k'] == 0.0
     assert len(result) > 10
 
+def test_local_llama_8b():
+    model_name = 'local-llama3-8b'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but need to run a unit test."}] #be polite to our overlords
+    result, run_info = llm.run(test_prompt, {'temperature':1.0,
+                                            'seed': 13,
+                                            'top_p_k': 1.0})
+    assert run_info['prompt'] == test_prompt
+    #assert run_info['model_name'] == model_name
+    assert run_info['temperature'] == 1.0
+    assert run_info['seed'] == 13
+    assert run_info['top_p_k'] == 1.0
+    assert len(result) > 10
+
 def test_llama_70b():
     model_name = 'llama3-70b'
     llm = importlib.import_module(f'models.{model_name}')
@@ -182,7 +196,6 @@ def test_gpt_4o_prefix_suffix():
                                             'suffix': suffix})
     assert run_info['prompt'][0]['content'] ==\
          f"{prefix}{test_prompt[0]['content']}{suffix}"
-
 
 # def test_Llama_3_120B_Instruct_Q5_K_S():
 #     model_name = 'Llama-3-120B-Instruct-Q5_K_S'
