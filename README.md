@@ -42,7 +42,7 @@ We are only using miniconda to manage our environment, we will use `pip` to inst
 
 - `pip install -r requirements.txt`
 
-Now you should have an functioning environment to use. 
+Now you should have a functioning environment to use. 
 
 ### 3.1 Setup to run evaluation
 
