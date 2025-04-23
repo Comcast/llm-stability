@@ -3,6 +3,7 @@ import os
 import sys
 from dotenv import load_dotenv
 import helper_functions
+from types import SimpleNamespace
 
 load_dotenv()
 
@@ -43,13 +44,26 @@ def run(prompt: list, config: dict) -> (str):
     if config.get('suffix', None) is not None:
         prompt = [{'role': 'user',
                    'content': prompt[0]['content'] + config['suffix']}]
+    if config.get('logprobs', False):
+        logprobs = 1
+    else:
+        logprobs = None
+    logprobs_config = config.get('logprobs', False)
     response = MODEL.chat.completions.create(
                     messages=prompt,
                     model=MODEL_NAME,
                     temperature=config['temperature'],
                     seed=config['seed'],
-                    top_p=config['top_p_k']
+                    top_p=config['top_p_k'],
+                    logprobs=logprobs
                 )
+    if logprobs_config:
+        clean_tokens = [t.replace('▁', ' ') for t in response.choices[0].logprobs.tokens]
+        logprobs = [SimpleNamespace(token=tk, logprob=lp) for tk, lp in \
+                    zip(clean_tokens,
+                        response.choices[0].logprobs.token_logprobs)]
+    else:
+        logprobs = []
     return (response.choices[0].message.content,
             {
             'prompt':prompt, 
@@ -58,5 +72,6 @@ def run(prompt: list, config: dict) -> (str):
             'seed': config['seed'],
             'top_p_k': config['top_p_k'],
             'rewrite_inst': config.get('rewrite_inst', None),
-            'cache_used': cache_used
+            'cache_used': cache_used,
+            'logprobs': logprobs
             })

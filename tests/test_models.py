@@ -6,7 +6,8 @@ import tasks.professional_accounting
 import tasks.navigate
 import importlib
 import json
-
+import math
+import numpy as np
 """
 Testing models for basic processing and authentication. Usage:
 
@@ -33,6 +34,7 @@ To test single model, e.g., gpt-35-turbo:
 """
 
 def test_gpt_35_turbo():
+    return #no longer have credentails
     model_name = 'gpt-35-turbo'
     llm = importlib.import_module(f'models.{model_name}')
     test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but need to run a unit test."}] #be polite to our overlords
@@ -48,6 +50,7 @@ def test_gpt_35_turbo():
 
     
 def test_gpt_4o():
+    return #no longer have credentails
     model_name = 'gpt-4o'
     llm = importlib.import_module(f'models.{model_name}')
     test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but need to run a unit test."}] #be polite to our overlords
@@ -104,6 +107,7 @@ def test_mixtral_8x7b():
     assert len(result) > 10
 
 def test_gpt_4o_rewrite():
+    return #no longer have credentails
     model_name = 'gpt-4o'
     llm = importlib.import_module(f'models.{model_name}')
     test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
@@ -131,6 +135,7 @@ def test_gpt_4o_rewrite():
 
 
 def test_gpt_3_5_turbo_rewrite():
+    return #no longer have credentails
     model_name = 'gpt-35-turbo'
     llm = importlib.import_module(f'models.{model_name}')
     test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
@@ -157,6 +162,7 @@ def test_gpt_3_5_turbo_rewrite():
     assert run_info['cache_used']
 
 def test_gpt_3_5_turbo_prefix_suffix():
+    return #no longer have credentails
     model_name = 'gpt-35-turbo'
     llm = importlib.import_module(f'models.{model_name}')
     test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
@@ -171,6 +177,7 @@ def test_gpt_3_5_turbo_prefix_suffix():
          f"{prefix}{test_prompt[0]['content']}{suffix}"
 
 def test_gpt_4o_prefix_suffix():
+    return #no longer have credentails
     model_name = 'gpt-4o'
     llm = importlib.import_module(f'models.{model_name}')
     test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
@@ -214,58 +221,128 @@ def test_gpt_4o_OAI():
     answer_d = json.loads(result)
     assert answer_d['Answer'] == 'No'
 
+def test_gpt_35_OAI_fine_tuned():
+    #pre trained fine tuned models
+    model_config = {'temperature': 0.0, 'seed': 12, 'top_p_k': 1.0,
+                    'even_model': 'ft:gpt-3.5-turbo-0125:personal::BAJ2zmk1', 
+                    'odd_model': 'ft:gpt-3.5-turbo-0125:personal::BAJA6sJq'}
+    model_name = 'gpt-35_OAI'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
+    model_config['rubric_counter'] = 0
+    result, run_info = llm.run(test_prompt, model_config)
+    model_config['rubric_counter'] = 1
+    result, run_info = llm.run(test_prompt, model_config)
+    assert True
+
+def test_gpt_35_OAI_logprob():
+    #pre trained fine tuned models
+    model_config = {'temperature': 0.0, 'seed': 12, 'top_p_k': 1.0,
+                    'logprobs':True}
+    model_name = 'gpt-35_OAI'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0].token != ''
+    assert run_info['logprobs'][0].logprob <= 0.0
+
+
+def test_gpt_4o_OAI_logprob():
+    #pre trained fine tuned models
+    model_config = {'temperature': 0.0, 'seed': 12, 'top_p_k': 1.0,
+                    'logprobs':True}
+    model_name = 'gpt-4o_OAI'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0].token != ''
+    assert run_info['logprobs'][0].logprob <= 0.0
+
+
+def test_llama3_8b_logprob():
+    model_config = {'temperature': 0.0, 'seed': 12, 'top_p_k': 1.0,
+                    'logprobs':True}
+    model_name = 'llama3-8b'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0].token != ''
+    assert run_info['logprobs'][0].logprob <= 0.0
+
+
+def test_mistral8x7b_logprob():
+    model_config = {'temperature': 0.0, 'seed': 12, 'top_p_k': 1.0,
+                    'logprobs':True}
+    model_name = 'mixtral-8x7b'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "Wakey wakey,u up? Sorry to bother you but can you run this unit test."}] #be polite to our overlords
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0].token != ''
+    for tok in run_info['logprobs']:
+        assert '▁' not in tok.token
+    assert run_info['logprobs'][0].logprob <= 0.0
+
+def test_deterministic_sim():
+    # run python models/deterministic-sim.py to generate the expected results 
+    # comprehensively.
+    model_config = {'temperature': 0.0, 'seed': 12, 'top_p_k': 1.0,
+                    'logprobs':True, 'round': 0, 'rubric_counter': 0}
+    model_name = 'deterministic-sim'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "IGNORED"}] #content is ignored
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0]['token'] != ''
+    assert run_info['logprobs'][0]['logprob']<= 0.0
+
+    model_config['round'] = 0 
+    model_config['rubric_counter'] = 0
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0]['logprob'] == \
+        math.log((model_config['rubric_counter'] + 1)/100)
+    assert result == '(A) same'
+    
+    model_config['round'] = 0 
+    model_config['rubric_counter'] = 20
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0]['logprob'] == \
+        math.log((model_config['rubric_counter'] + 1)/100)
+    assert result == f'(A) same'
+
+    model_config['round'] = 0 
+    model_config['rubric_counter'] = 99
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0]['logprob'] == \
+        math.log((model_config['rubric_counter'] + 1)/100)
+    assert result == f'(A) same'
+    
+    # test the 5/5 case
+    model_config['round'] = 4
+    model_config['rubric_counter'] = 0
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0]['logprob'] == \
+        math.log((model_config['rubric_counter'] + 1)/100)
+    assert result == '(A) different 4'
+
+    model_config['round'] = 4
+    model_config['rubric_counter'] = 99
+    result, run_info = llm.run(test_prompt, model_config)
+    assert run_info['logprobs'][0]['logprob'] == \
+        math.log((model_config['rubric_counter'] + 1)/100)
+    assert result == '(A) same'
+
+def test_bimodal_sim():
+    model_config = {'temperature': 0.0, 'seed': 12, 'top_p_k': 1.0,
+                    'logprobs':True, 'round': 0, 'rubric_counter': 0}
+    model_name = 'bimodal-sim'
+    llm = importlib.import_module(f'models.{model_name}')
+    test_prompt = [{"role": "user", "content": "IGNORED"}] #content is ignored
+    result, run_info = llm.run(test_prompt, model_config)
+    assert result == f'(A) different {model_config["round"]}'
+    assert run_info['logprobs'][0]['logprob'] < np.log(.5)
+    model_config['rubric_counter'] = 99
+    result, run_info = llm.run(test_prompt, model_config)
+    assert result == f'(A) same'
+    assert run_info['logprobs'][0]['logprob'] > np.log(.5)
 
 
 
-
-
-
-    #math_tutor_prompt = '''
-#     You are a helpful math tutor. You will be provided with a math problem,
-#     and your goal will be to output a step by step solution, along with a final answer.
-#     For each step, just provide the output as an equation use the explanation field to detail the reasoning.
-# '''
-
-# def get_math_solution(question):
-#     response = client.chat.completions.create(
-#     model=MODEL,
-#     messages=[
-#         {
-#             "role": "system", 
-#             "content": dedent(math_tutor_prompt)
-#         },
-#         {
-#             "role": "user", 
-#             "content": question
-#         }
-#     ],
-#     response_format={
-#         "type": "json_schema",
-#         "json_schema": {
-#             "name": "math_reasoning",
-#             "schema": {
-#                 "type": "object",
-#                 "properties": {
-#                     "steps": {
-#                         "type": "array",
-#                         "items": {
-#                             "type": "object",
-#                             "properties": {
-#                                 "explanation": {"type": "string"},
-#                                 "output": {"type": "string"}
-#                             },
-#                             "required": ["explanation", "output"],
-#                             "additionalProperties": False
-#                         }
-#                     },
-#                     "final_answer": {"type": "string"}
-#                 },
-#                 "required": ["steps", "final_answer"],
-#                 "additionalProperties": False
-#             },
-#             "strict": True
-#         }
-#     }
-#     )
-
-#     return response.choices[0].message

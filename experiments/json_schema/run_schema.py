@@ -6,6 +6,43 @@ import run_experiment
 from datetime import datetime, date, MINYEAR
 
 
+schema = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "experiment",
+            "schema": {
+                "type": "object",
+                "properties": {
+                                "Answer": {
+                                  "type": "string",
+                                  "enum" : ["Yes", "No"]
+                                }
+                              },
+                              "required": [
+                                "Answer"
+                              ],
+                              "additionalProperties": False
+            },
+            "strict": True
+        }
+}
+
+
+json_schema_Yes_No = {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Answer": {
+      "type": "string",
+      "enum" : ["Yes", "No"]
+    }
+  },
+  "required": [
+    "Answer"
+  ]
+}
+
+
 
 json_schema_prompt_Yes_No = """
 Please answer the following question adhering to these format instructions:
@@ -83,7 +120,7 @@ The question is:
 """
 
 
-MODELS = ['gpt-4o', 'gpt-35-turbo']
+MODELS = ['gpt-4o', 'gpt-35-turbo', 'gpt-4o_OAI']
 MODEL_CONFIGS = [{'temperature': 0.0, 'seed': 12, 'top_p_k': 0.0,
                  'prefix': ''}]
 
@@ -130,6 +167,7 @@ for model, model_config, task, task_config in experiments:
                 'task_config': task_config,
                 'task_config_in_filename': task_config['shots'],
                 'num_runs': 5,
+                'schema': model_config['prefix']
 #                'limit_num_rubrics': 1
     }
 #    datetime_string = '0001-01-01_00-00-00'

@@ -58,5 +58,6 @@ def run(prompt: list, config: dict) -> (str):
             'seed': config['seed'],
             'top_p_k': config['top_p_k'],
             'rewrite_inst': config.get('rewrite_inst', None),
-            'cache_used': cache_used
+            'cache_used': cache_used,
+            'logprobs': []
             })

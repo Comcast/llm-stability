@@ -77,6 +77,7 @@ def run_model(llm,
         runs = []
         rubric_ids = []
         dates = []
+        logprobs = []
         print(f"Running {i}")
         rubric_counter = 0
         for rubric in tqdm.tqdm(test_rubrics):
@@ -84,6 +85,8 @@ def run_model(llm,
                 if rubric_counter % 50 == 0 or rubric_counter == 10:
                     context.markdown(f"Running rubric {rubric_counter}")
             prompt = [{"role": "user", "content": rubric['input']}]
+            model_config['rubric_counter'] = rubric_counter
+            model_config['round'] = i
             try:
                 response, run_config = llm.run(prompt, model_config)
                 for config in ['temperature', 'top_p_k', 'seed']:
@@ -97,6 +100,8 @@ def run_model(llm,
             questions.append(rubric['input'])
             modified_questions.append(run_config['prompt'][0]['content'])
             ground_truths.append(rubric['target'])
+            del model_config['rubric_counter']
+            del model_config['round']
             model_configs.append(json.dumps(model_config))
             llm_responses.append(response)
             models.append(model_name)
@@ -105,6 +110,8 @@ def run_model(llm,
             runs.append(i)
             rubric_ids.append(rubric_counter)
             dates.append(date)
+            logprobs.append(json.dumps([{'token':e['token'], 'logprob':e['logprob']} \
+                for e in run_config.get('logprobs', [])], indent=4))
             rubric_counter += 1
         df = pd.DataFrame({
                             'model': models,
@@ -119,6 +126,7 @@ def run_model(llm,
                             'prompt':prompts, 
                             'run': runs,
                             'response': llm_responses, 
+                            'logprobs': logprobs,
                             'date': dates})
         assert len(df.index) == rubric_counter
         run_file = os.path.join(out_dir, f"{outfile_root}-{i}.csv")

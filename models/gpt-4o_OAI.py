@@ -67,6 +67,7 @@ def run(prompt: list, config: dict) -> (str):
     seed = config['seed']
     top_p = config['top_p_k']
     cache_used = False
+    logprobs_config = config.get('logprobs', False)
     if config.get('rewrite_inst', None) is not None:
         prompt, cache_used = \
             helper_functions.apply_rewrite(prompt, config, seen_before, MODEL, 
@@ -93,10 +94,14 @@ def run(prompt: list, config: dict) -> (str):
                     model=MODEL_NAME,
                     temperature=temperature,
                     seed=seed,
-                    top_p=top_p
+                    top_p=top_p,
+                    logprobs=logprobs_config,
+                    top_logprobs=config.get('top_logprobs', 0)
                 )
-
-
+    if logprobs_config:
+        logprobs = response.choices[0].logprobs.content
+    else:
+        logprobs = []
     return (response.choices[0].message.content,
             {
             'prompt':prompt, 
@@ -105,5 +110,6 @@ def run(prompt: list, config: dict) -> (str):
             'seed': seed,
             'top_p_k': top_p,
             'rewrite_inst': config.get('rewrite_inst', None),
-            'cache_used': cache_used
+            'cache_used': cache_used,
+            'logprobs': logprobs
             })

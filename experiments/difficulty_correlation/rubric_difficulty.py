@@ -191,8 +191,8 @@ def evaluate(data_df: pd.DataFrame, num_bootstrap_draws=10) -> (dict, pd.DataFra
             print(f'Need to add {f"tasks.{task}"}, skipping eval')
             continue
         for rubric_id in data_df[data_df['task'] == task]['rubric_id'].unique():
-            #for each rubric
-                #for each config= model x m_c x tc x N runs
+            # for each rubric
+                # for each config= model x m_c x tc x N runs
                 #    difficulty score = accuracy score for rubric
                 #    best_possible = for N runs = 100% if ever right
                 #    average = correct/N
@@ -217,18 +217,20 @@ def evaluate(data_df: pd.DataFrame, num_bootstrap_draws=10) -> (dict, pd.DataFra
                                 & (data_df['rubric_id'] == rubric_id)
                                 ]
                 total_configs += 1
-                raw = set()
+                raw = defaultdict(int)
                 answer = set()
                 if len(exp_df.index) == 0: #may have combos with no data
                     continue
                 num_runs = max(exp_df['run']) + 1
                 config = f'{model}:{json.dumps(model_config)}:{json.dumps(task_config)}'
                 task_config_performance[config] = \
-                    {'correct': [0] * num_runs, 'raw':0, 'answer':0}
+                    {'correct': [0] * num_runs, 'raw':0, 'answer':0, 'N': num_runs, 'raw_length': [0] * num_runs}
                 #correct = [0] * num_runs # need to track correct for run number
                 corrects_for_rubric = 0
                 for idx, row in exp_df.iterrows(): # config runs x N
-                    raw.add(task_module.raw_fn(row))
+                    raw[task_module.raw_fn(row)] += 1
+                    task_config_performance[config]['raw_length'][row['run']] =\
+                        len(task_module.raw_fn(row))
                     total_evals += 1
                     total_count += 1
                     if pd.isna(row['response']):
@@ -239,22 +241,19 @@ def evaluate(data_df: pd.DataFrame, num_bootstrap_draws=10) -> (dict, pd.DataFra
                             (parsed_answer, answer_cache_df) = \
                                 check_hand_annotated_cache(row, answer_cache_df)
                         if parsed_answer is None:
-                            answer.add(idx) # No answer will always fail TARa
+                            answer.add(idx) # No answer, use idx which is unique
                             continue # cannot be correct so continue
                         else:
-                            data_df.loc[idx,'parsed_answer'] = parsed_answer
                             answer.add(parsed_answer)
                     except LookupError as e: #LookupError is 
-                        answer.add(idx) # Blown UP is also a failure of TARa
-                        data_df.loc[idx,'parsed_answer'] = "Blown UP"
+                        answer.add(idx) # Blown UP, use idx which is unique
                         continue # can't be correct so continue
                     if task_module.correct_fn(row, task_config):
                         task_config_performance[config]['correct'][row['run']] += 1
-                        #correct[row['run']] += 1
-                        data_df.loc[idx,'correct'] = True
                         corrects_for_rubric += 1
                         correct_count += 1
-                if len(raw) == 1:
+                task_config_performance[config]['max_raw_count'] = max(raw.values())
+                if len(raw.keys()) == 1:
                     task_config_performance[config]['raw'] = 1
                     total_agreement_count_raw += 1
                 if len(answer) == 1:
@@ -269,7 +268,6 @@ def evaluate(data_df: pd.DataFrame, num_bootstrap_draws=10) -> (dict, pd.DataFra
                 print(f"Task {task}, rubric id {rubric_id} has no data, skipping")
                 continue
             
-
             result_d = {
                     'task': task,
                     'rubric_id': rubric_id,
@@ -283,10 +281,11 @@ def evaluate(data_df: pd.DataFrame, num_bootstrap_draws=10) -> (dict, pd.DataFra
                     #'details': task_config_performance,
                     #'correct_count_per_config': correct,
                     #'correct_pct_per_config': [c/total_configs for c in correct],
-                    #'N': num_runs,
+                    'N': num_runs,
                     'total': total_count,
                     'correct': correct_count,
                     'accuracy': correct_count/total_count,
+                    'difficulty': correct_count/total_count,
                     #'best_possible_count': any_correct_count,
                     #'best_possible_accuracy': any_correct_count/total_configs,
                     #'worst_possible_count': total_configs-any_wrong_count,
@@ -297,7 +296,13 @@ def evaluate(data_df: pd.DataFrame, num_bootstrap_draws=10) -> (dict, pd.DataFra
                     }
             for config_name, val in task_config_performance.items():
                 result_d[f'raw: {config_name}'] =  val['raw']
+                result_d[f'max raw count: {config_name}'] = val['max_raw_count']
+                result_d[f'max raw %: {config_name}'] = \
+                    val['max_raw_count']/val['N']
                 result_d[f'answer: {config_name}'] =  val['answer']
+                result_d[f'raw lengths: {config_name}'] =  val['raw_length']
+                result_d[f'raw length avg: {config_name}'] =  \
+                    sum(val['raw_length'])/val['N']
             result_s = pd.Series(result_d)
             results = \
                 pd.concat([results, result_s.to_frame().T],  ignore_index=True)

@@ -71,7 +71,6 @@ def test_v2_Yes_No():
     assert eval_df['best_possible_accuracy'].iloc[0] == 1.0
     assert eval_df['worst_possible_count'].iloc[0] == 1
     assert eval_df['worst_possible_accuracy'].iloc[0] == 1.0
-
     assert eval_df['bootstrap_counts'].iloc[0] == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     assert eval_df['bootstrap_pcts'].iloc[0] == [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
 

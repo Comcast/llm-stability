@@ -11,8 +11,8 @@ import re
 Contains helper functions. 
 """
 
-def experiment_setup(models:list, 
-                     model_configs:list, 
+def experiment_setup(models:list,
+                     model_configs:list,
                      tasks:list, 
                      task_configs:list) -> list:
     """Returns all possible experiment tuples given params. 
@@ -126,7 +126,6 @@ None of the given options are correct. The dimension that cannot be the dimensio
                     
                     #harvest boxed latex
                     #eval and look for float match
-
                 if match_type == 'answer is':
                     escaped_parens = \
                         answer.replace('(', r'\(').replace(')', r'\)')

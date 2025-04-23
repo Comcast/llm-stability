@@ -9,7 +9,7 @@ from datetime import datetime, date, MINYEAR
 def test_end_to_end_run(): 
     out_dir = os.path.join('local_runs', 'tmp_test')
     shutil.rmtree(out_dir, ignore_errors=True)
-    model = 'gpt-4o'
+    model = 'llama3-8b'
     task = 'professional_accounting'
     args = {'model': model, #module name version
             'model_config': {"temperature":0.0, "seed": 12, "top_p_k": 0.0}, 
@@ -33,7 +33,7 @@ def test_backslash_removal():
     """ 
     out_dir = os.path.join('local_runs', 'tmp_test')
     shutil.rmtree(out_dir, ignore_errors=True)
-    model = 'gpt-4o'
+    model = 'llama3-8b'
     task = 'professional_accounting'
     
     args = {'model': model, #module name version
